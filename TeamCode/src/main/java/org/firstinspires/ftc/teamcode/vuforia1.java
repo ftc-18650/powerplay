@@ -22,6 +22,20 @@ public class vuforia1 extends LinearOpMode {
     /**
      * This function is executed when this Op Mode is selected from the Driver Station.
      */
+    private void ParkingLocation (String signal) {
+        if(signal == "1 Bolt") {
+            telemetry.addData(" parking location:", 1);
+            telemetry.update();
+        } else if(signal == "2 Bulb") {
+            telemetry.addData(" parking location:", 2);
+            telemetry.update();
+        } else if(signal == "3 Panel") {
+            telemetry.addData(" parking location:", 3);
+            telemetry.update();
+        }
+    }
+
+
     @Override
     public void runOpMode() {
         List<Recognition> recognitions;
@@ -55,7 +69,7 @@ public class vuforia1 extends LinearOpMode {
         // in the Camera Stream preview window on the Driver Station.
         tfod.activate();
         // Enable following block to zoom in on target.
-        tfod.setZoom(1, 16 / 9);
+        tfod.setZoom(1.75, 16 / 9);
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Press Play to start");
         telemetry.update();
@@ -78,7 +92,8 @@ public class vuforia1 extends LinearOpMode {
                     for (Recognition recognition_item : recognitions) {
                         recognition = recognition_item;
                         // Display info.
-                        displayInfo(index);
+                        //displayInfo(index);
+                        ParkingLocation(recognition.getLabel());
                         // Increment index.
                         index = index + 1;
                     }
@@ -108,5 +123,6 @@ public class vuforia1 extends LinearOpMode {
         // Display the location of the bottom right corner
         // of the detection boundary for the recognition
         telemetry.addData("Right, Bottom " + i, Double.parseDouble(JavaUtil.formatNumber(recognition.getRight(), 0)) + ", " + Double.parseDouble(JavaUtil.formatNumber(recognition.getBottom(), 0)));
+        telemetry.update();
     }
 }
