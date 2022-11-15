@@ -133,12 +133,15 @@ public class signals extends LinearOpMode {
     private void RunToSignal (int Signal) {
         SignalNumber = Signal;
         if (SignalNumber == 1) {
+            Move_F_B(1);
             Move_L_R(-1 * tileSize);
             Move_F_B(1.5 * tileSize);
         } else if (SignalNumber == 2) {
+            Move_F_B(1);
             Move_F_B(1.5 * tileSize);
         } else if (SignalNumber == 3) {
             Move_L_R(tileSize);
+            Move_F_B(1);
             Move_F_B(1.5 * tileSize);
         }
     }
@@ -178,7 +181,7 @@ public class signals extends LinearOpMode {
         // in the Camera Stream preview window on the Driver Station.
         tfod.activate();
         // Enable following block to zoom in on target.
-        tfod.setZoom(1.75, 16 / 9);
+        tfod.setZoom(2.5, 16 / 9);
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Press Play to start");
         telemetry.update();

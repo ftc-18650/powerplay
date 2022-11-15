@@ -5,6 +5,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import java.util.List;
+import org.firstinspires.ftc.robotcore.external.JavaUtil;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaCurrentGame;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.Tfod;
 
 @TeleOp(name = "driver (Blocks to Java)")
 
@@ -30,6 +38,40 @@ public class driverCapableMode2 extends LinearOpMode {
     /** tile size in inches */
     final private int tileSize = 24;
 
+    int SignalNumber;
+
+    private VuforiaCurrentGame vuforiaPOWERPLAY;
+    private Tfod tfod;
+
+    Recognition recognition;
+
+    private void ParkingLocation (String signal) {
+        if(signal == "1 Bolt") {
+            telemetry.addData(" parking location:", 1);
+            SignalNumber = 1;
+        } else if(signal == "2 Bulb") {
+            telemetry.addData(" parking location:", 2);
+            SignalNumber = 2;
+        } else if(signal == "3 Panel") {
+            telemetry.addData(" parking location:", 3);
+            SignalNumber = 3;
+        }
+    }
+
+    private void RunToSignal (int signal) {
+        if (signal == 1) {
+            Move_F_B(1);
+            Move_L_R(-1 * tileSize);
+            Move_F_B(1.5 * tileSize);
+        } else if (signal == 2) {
+            Move_F_B(1);
+            Move_F_B(1.5 * tileSize);
+        } else if (signal == 3) {
+            Move_L_R(tileSize);
+            Move_F_B(1);
+            Move_F_B(1.5 * tileSize);
+        }
+    }
     private void Config_Drive_to_Manual() {
 
         LFront.setPower(0);
@@ -127,17 +169,73 @@ public class driverCapableMode2 extends LinearOpMode {
         RFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         RRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        List<Recognition> recognitions;
+
+        vuforiaPOWERPLAY = new VuforiaCurrentGame();
+        tfod = new Tfod();
+
+        vuforiaPOWERPLAY.initialize(
+                "", // vuforiaLicenseKey
+                hardwareMap.get(WebcamName.class, "Webcam 1"), // cameraName
+                "", // webcamCalibrationFilename
+                false, // useExtendedTracking
+                false, // enableCameraMonitoring
+                VuforiaLocalizer.Parameters.CameraMonitorFeedback.NONE, // cameraMonitorFeedback
+                0, // dx
+                0, // dy
+                0, // dz
+                AxesOrder.XZY, // axesOrder
+                90, // firstAngle
+                90, // secondAngle
+                0, // thirdAngle
+                true); // useCompetitionFieldTargetLocations
+        tfod.useDefaultModel();
+        // Set min confidence threshold to 0.7
+        tfod.initialize(vuforiaPOWERPLAY, (float) 0.6, true, true);
+        // Initialize TFOD before waitForStart.
+        // Activate TFOD here so the object detection labels are visible
+        // in the Camera Stream preview window on the Driver Station.
+        tfod.activate();
+        // Enable following block to zoom in on target.
+        tfod.setZoom(2.75, 16 / 9);
+        telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
+        telemetry.addData(">", "Press Play to start");
+        telemetry.update();
 
         waitForStart();
         while (opModeIsActive()) {
 
             telemetry.addData("LSX", gamepad1.left_stick_x);
             telemetry.addData("LSY", gamepad1.left_stick_y);
-            telemetry.update();
+
 
             Process_Movement();
-
+            recognitions = tfod.getRecognitions();
+            // If list is empty, inform the user. Otherwise, go
+            // through list and display info for each recognition.
+            if (JavaUtil.listLength(recognitions) == 0) {
+                telemetry.addData("TFOD", "No items detected.");
+            } else {
+                // index = 0;
+                // Iterate through list and call a function to
+                // display info for each recognized object.
+                for (Recognition recognition_item : recognitions) {
+                    recognition = recognition_item;
+                    // Display info.
+                    //displayInfo(index);
+                    //ParkingLocation(recognition.getLabel());
+                    // Increment index.
+                    //index = index + 1;
+                }
+                ParkingLocation(recognition.getLabel());
+            }
+            telemetry.update();
         }
+        // Deactivate TFOD.
+        tfod.deactivate();
+
+        vuforiaPOWERPLAY.close();
+        tfod.close();
     }
 
     /**
@@ -238,7 +336,6 @@ public class driverCapableMode2 extends LinearOpMode {
      */
     private void Process_Movement() {
         telemetry.addData("Process_Movement",0);
-        telemetry.update();
         if (gamepad1.dpad_up) {
             GoStraight();
         } else if (gamepad1.dpad_down) {
@@ -249,7 +346,6 @@ public class driverCapableMode2 extends LinearOpMode {
             GoRight();
         } else if (gamepad1.y) {
             telemetry.addData("Move_F_B",tileSize);
-            telemetry.update();
             Move_F_B(tileSize);
         } else if (gamepad1.a) {
             Move_F_B(-1 * tileSize);
@@ -257,6 +353,8 @@ public class driverCapableMode2 extends LinearOpMode {
             Move_L_R(-1 * tileSize);
         } else if (gamepad1.b) {
             Move_L_R(tileSize);
+        } else if (gamepad1.right_bumper) {
+            RunToSignal(SignalNumber);
         } else {
             Set_Power_Values(
                 gamepad1.left_stick_x,
