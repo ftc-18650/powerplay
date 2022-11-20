@@ -31,9 +31,9 @@ public class driverCapableMode2 extends LinearOpMode {
     static final double THY_MAGIC_NUMBER = 26.67;
     static final double THY_MAGIC_NUMBER_SIDEWAYS = 28.125;
     static final double THY_MAGIC_NUMBER_ANGLE = 6.53;
-    static final float DPAD_POWER_LVL = 1.5F;
+    static final float DPAD_POWER_LVL = 2.0F;
 
-    double Current_Power_Lvl = 0.20;
+    double Current_Power_Lvl = 0.30;
 
     /** tile size in inches */
     final private int tileSize = 24;
