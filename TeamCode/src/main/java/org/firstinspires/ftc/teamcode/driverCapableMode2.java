@@ -31,7 +31,7 @@ public class driverCapableMode2 extends LinearOpMode {
     static final double THY_MAGIC_NUMBER = 26.67;
     static final double THY_MAGIC_NUMBER_SIDEWAYS = 28.125;
     static final double THY_MAGIC_NUMBER_ANGLE = 6.53;
-    static final float DPAD_POWER_LVL = 2.0F;
+    static final float DPAD_POWER_LVL = 1.0F;
 
     double Current_Power_Lvl = 0.30;
 
@@ -43,16 +43,18 @@ public class driverCapableMode2 extends LinearOpMode {
     private VuforiaCurrentGame vuforiaPOWERPLAY;
     private Tfod tfod;
 
+    private int detected = 1;
+
     Recognition recognition;
 
     private void ParkingLocation (String signal) {
-        if(signal == "1 Bolt") {
+        if(signal == "pizza") {
             telemetry.addData(" parking location:", 1);
             SignalNumber = 1;
-        } else if(signal == "2 Bulb") {
+        } else if(signal == "chip") {
             telemetry.addData(" parking location:", 2);
             SignalNumber = 2;
-        } else if(signal == "3 Panel") {
+        } else if(signal == "cookie") {
             telemetry.addData(" parking location:", 3);
             SignalNumber = 3;
         }
@@ -151,6 +153,17 @@ public class driverCapableMode2 extends LinearOpMode {
             }
         }
     }
+    private void Detection () {
+        if (detected == 1) {
+            Move_L_R(5);
+            Move_L_R(-5);
+            telemetry.addData("detected", detected);
+        } else {
+            RunToSignal(SignalNumber);
+        }
+        //RunToSignal(SignalNumber);
+
+    }
 
     @Override
     public void runOpMode() {
@@ -189,15 +202,16 @@ public class driverCapableMode2 extends LinearOpMode {
                 90, // secondAngle
                 0, // thirdAngle
                 true); // useCompetitionFieldTargetLocations
+        //tfod.useModelFromAsset("model_20221127_150324.tflite", new String[] { "cookie", "chip", "pizza"});
         tfod.useDefaultModel();
         // Set min confidence threshold to 0.7
-        tfod.initialize(vuforiaPOWERPLAY, (float) 0.6, true, true);
+        tfod.initialize(vuforiaPOWERPLAY, (float) 0.7, true, true);
         // Initialize TFOD before waitForStart.
         // Activate TFOD here so the object detection labels are visible
         // in the Camera Stream preview window on the Driver Station.
         tfod.activate();
         // Enable following block to zoom in on target.
-        tfod.setZoom(2.75, 16 / 9);
+        tfod.setZoom(2.25, 16 / 9);
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Press Play to start");
         telemetry.update();
@@ -215,6 +229,7 @@ public class driverCapableMode2 extends LinearOpMode {
             // through list and display info for each recognition.
             if (JavaUtil.listLength(recognitions) == 0) {
                 telemetry.addData("TFOD", "No items detected.");
+                detected = 1;
             } else {
                 // index = 0;
                 // Iterate through list and call a function to
@@ -227,8 +242,11 @@ public class driverCapableMode2 extends LinearOpMode {
                     // Increment index.
                     //index = index + 1;
                 }
+                detected = 0;
                 ParkingLocation(recognition.getLabel());
+
             }
+
             telemetry.update();
         }
         // Deactivate TFOD.
