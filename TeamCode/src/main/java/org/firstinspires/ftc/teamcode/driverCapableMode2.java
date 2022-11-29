@@ -44,23 +44,29 @@ public class driverCapableMode2 extends LinearOpMode {
     private Tfod tfod;
 
     private int detected = 1;
+    int h = 0;
+    private boolean MoveToSpot = false;
 
     Recognition recognition;
 
     private void ParkingLocation (String signal) {
-        if(signal == "pizza") {
+        if(signal == "1 Bolt") {
             telemetry.addData(" parking location:", 1);
             SignalNumber = 1;
-        } else if(signal == "chip") {
+        } else if(signal == "2 Bulb") {
             telemetry.addData(" parking location:", 2);
             SignalNumber = 2;
-        } else if(signal == "cookie") {
+        } else if(signal == "3 Panel") {
             telemetry.addData(" parking location:", 3);
             SignalNumber = 3;
+        } else {
+            SignalNumber = 0;
         }
+
     }
 
     private void RunToSignal (int signal) {
+        MoveToSpot = true;
         if (signal == 1) {
             Move_F_B(1);
             Move_L_R(-1 * tileSize);
@@ -154,15 +160,52 @@ public class driverCapableMode2 extends LinearOpMode {
         }
     }
     private void Detection () {
-        if (detected == 1) {
-            Move_L_R(5);
-            Move_L_R(-5);
-            telemetry.addData("detected", detected);
+        List<Recognition> recognitions;
+        recognitions = tfod.getRecognitions();
+        // If list is empty, inform the user. Otherwise, go
+        // through list and display info for each recognition.
+        if (JavaUtil.listLength(recognitions) == 0) {
+            telemetry.addData("TFOD", "No items detected.");
+            detected = 1;
+            ParkingLocation("no detection");
         } else {
+            // index = 0;
+            // Iterate through list and call a function to
+            // display info for each recognized object.
+            for (Recognition recognition_item : recognitions) {
+                recognition = recognition_item;
+                // Display info.
+                //displayInfo(index);
+                //ParkingLocation(recognition.getLabel());
+                // Increment index.
+                //index = index + 1;
+            }
+            detected = 0;
+            ParkingLocation(recognition.getLabel());
             RunToSignal(SignalNumber);
-        }
-        //RunToSignal(SignalNumber);
 
+        }
+
+
+    }
+    private void MoveForSignal () {
+        Detection();
+        if (h == 0) {
+            Move_L_R(1);
+            h++;
+        } else {
+            Move_L_R(-1);
+            h--;
+        }
+    }
+    private void ScanForSignal () {
+        while (true) {
+            if (MoveToSpot == false) {
+                MoveForSignal();
+            } else {
+                return;
+            }
+        }
     }
 
     @Override
@@ -182,7 +225,7 @@ public class driverCapableMode2 extends LinearOpMode {
         RFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         RRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        List<Recognition> recognitions;
+
 
         vuforiaPOWERPLAY = new VuforiaCurrentGame();
         tfod = new Tfod();
@@ -224,28 +267,7 @@ public class driverCapableMode2 extends LinearOpMode {
 
 
             Process_Movement();
-            recognitions = tfod.getRecognitions();
-            // If list is empty, inform the user. Otherwise, go
-            // through list and display info for each recognition.
-            if (JavaUtil.listLength(recognitions) == 0) {
-                telemetry.addData("TFOD", "No items detected.");
-                detected = 1;
-            } else {
-                // index = 0;
-                // Iterate through list and call a function to
-                // display info for each recognized object.
-                for (Recognition recognition_item : recognitions) {
-                    recognition = recognition_item;
-                    // Display info.
-                    //displayInfo(index);
-                    //ParkingLocation(recognition.getLabel());
-                    // Increment index.
-                    //index = index + 1;
-                }
-                detected = 0;
-                ParkingLocation(recognition.getLabel());
 
-            }
 
             telemetry.update();
         }
@@ -372,7 +394,10 @@ public class driverCapableMode2 extends LinearOpMode {
         } else if (gamepad1.b) {
             Move_L_R(tileSize);
         } else if (gamepad1.right_bumper) {
-            RunToSignal(SignalNumber);
+            ScanForSignal();
+            MoveToSpot = false;
+            h = 0;
+
         } else {
             Set_Power_Values(
                 gamepad1.left_stick_x,
