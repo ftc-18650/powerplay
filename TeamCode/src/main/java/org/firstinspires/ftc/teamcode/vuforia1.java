@@ -92,6 +92,7 @@ public class vuforia1 extends LinearOpMode {
                     for (Recognition recognition_item : recognitions) {
                         recognition = recognition_item;
                         // Display info.
+
                         //displayInfo(index);
                         ParkingLocation(recognition.getLabel());
                         // Increment index.

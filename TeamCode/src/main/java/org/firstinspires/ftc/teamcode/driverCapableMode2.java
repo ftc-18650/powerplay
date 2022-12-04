@@ -245,8 +245,10 @@ public class driverCapableMode2 extends LinearOpMode {
                 90, // secondAngle
                 0, // thirdAngle
                 true); // useCompetitionFieldTargetLocations
-        //tfod.useModelFromAsset("model_20221127_150324.tflite", new String[] { "cookie", "chip", "pizza"});
-        tfod.useDefaultModel();
+        tfod.useModelFromAsset(
+                "model_secondIteration.tflite",
+                new String[] { "cookie", "chip", "pizza"});
+        //tfod.useDefaultModel();
         // Set min confidence threshold to 0.7
         tfod.initialize(vuforiaPOWERPLAY, (float) 0.7, true, true);
         // Initialize TFOD before waitForStart.
