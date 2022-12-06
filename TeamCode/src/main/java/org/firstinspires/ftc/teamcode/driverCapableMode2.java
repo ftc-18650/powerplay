@@ -33,6 +33,7 @@ public class driverCapableMode2 extends LinearOpMode {
     static final double THY_MAGIC_NUMBER_ANGLE = 6.53;
     static final float DPAD_POWER_LVL = 1.0F;
 
+
     double Current_Power_Lvl = 0.30;
 
     /** tile size in inches */
@@ -78,6 +79,9 @@ public class driverCapableMode2 extends LinearOpMode {
             Move_L_R(tileSize);
             Move_F_B(1);
             Move_F_B(1.5 * tileSize);
+        } else {
+            MoveToSpot = false;
+            return;
         }
     }
     private void Config_Drive_to_Manual() {
@@ -193,6 +197,7 @@ public class driverCapableMode2 extends LinearOpMode {
         if (h == 0) {
             Move_L_R(1);
             h++;
+            Detection();
         } else {
             Move_L_R(-1);
             h--;
@@ -205,6 +210,83 @@ public class driverCapableMode2 extends LinearOpMode {
             } else {
                 return;
             }
+        }
+    }
+
+    private void StartingPosition() {
+        int startPos = 1;
+        String[] startPosName = new String[] {"F2", "F5", "A5", "A2"};
+        while (gamepad1.a == false) {
+            if (gamepad1.right_bumper && startPos < 4) {
+                startPos += 1;
+                sleep(200);
+            } else if (gamepad1.right_bumper && startPos >= 4) {
+                startPos = 1;
+                sleep(200);
+            } else if (gamepad1.left_bumper && startPos > 1) {
+                startPos -= 1;
+                sleep(200);
+            } else if (gamepad1.left_bumper && startPos <= 1) {
+                startPos = 4;
+                sleep(200);
+            }
+            telemetry.addData(startPosName[startPos - 1], startPos);
+            telemetry.update();
+        }
+        TargetPosition();
+        StartingCoordinates(startPos);
+    }
+    private void StartingCoordinates(int pos) {
+        int robotX = 6;
+        int robotY = 2;
+        if(pos == 1) {
+            robotX = 6;
+            robotY = 2;
+        } else if (pos == 2) {
+            robotX = 6;
+            robotY = 5;
+        } else if (pos == 3) {
+            robotX = 1;
+            robotY = 5;
+        } else if (pos == 4) {
+            robotX = 1;
+            robotY = 2;
+        }
+        telemetry.addData("coordinates: " + robotX + ", " + robotY, 0);
+        telemetry.update();
+    }
+    private void TargetPosition () {
+        int targetPosX = 1;
+        int targetPosY = 1;
+        String[] targetPosName = new String[] {"A", "B", "C", "D", "E", "F"};
+        while (gamepad1.b == false) {
+            if (gamepad1.dpad_right && targetPosX < 6) {
+                targetPosX += 1;
+                sleep(200);
+            } else if (gamepad1.dpad_right && targetPosX >= 6) {
+                targetPosX = 1;
+                sleep(200);
+            } else if (gamepad1.dpad_left && targetPosX > 1) {
+                targetPosX -= 1;
+                sleep(200);
+            } else if (gamepad1.dpad_left && targetPosX <= 1) {
+                targetPosX = 6;
+                sleep(200);
+            } else if (gamepad1.dpad_up && targetPosY < 6) {
+                targetPosY += 1;
+                sleep(200);
+            } else if (gamepad1.dpad_up && targetPosY >= 6) {
+                targetPosY = 1;
+                sleep(200);
+            } else if (gamepad1.dpad_down && targetPosY > 1) {
+                targetPosY -= 1;
+                sleep(200);
+            } else if (gamepad1.dpad_down && targetPosY <= 1) {
+                targetPosY = 6;
+                sleep(200);
+            }
+            telemetry.addData(targetPosName[targetPosX - 1] + targetPosY, 0);
+            telemetry.update();
         }
     }
 
@@ -259,6 +341,8 @@ public class driverCapableMode2 extends LinearOpMode {
         tfod.setZoom(2.25, 16 / 9);
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Press Play to start");
+        StartingPosition();
+        //TargetPosition();
         telemetry.update();
 
         waitForStart();
