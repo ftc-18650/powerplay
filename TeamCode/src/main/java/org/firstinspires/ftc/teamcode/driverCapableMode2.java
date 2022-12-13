@@ -33,6 +33,13 @@ public class driverCapableMode2 extends LinearOpMode {
     static final double THY_MAGIC_NUMBER_ANGLE = 6.53;
     static final float DPAD_POWER_LVL = 1.0F;
 
+    int robotX = 6;
+    int robotY = 2;
+    int startPos = 1;
+    int targetPosX = 1;
+    int targetPosY = 1;
+    int differenceX;
+    int differenceY;
 
     double Current_Power_Lvl = 0.30;
 
@@ -51,13 +58,13 @@ public class driverCapableMode2 extends LinearOpMode {
     Recognition recognition;
 
     private void ParkingLocation (String signal) {
-        if(signal == "1 Bolt") {
+        if(signal == "blue") {
             telemetry.addData(" parking location:", 1);
             SignalNumber = 1;
-        } else if(signal == "2 Bulb") {
+        } else if(signal == "green") {
             telemetry.addData(" parking location:", 2);
             SignalNumber = 2;
-        } else if(signal == "3 Panel") {
+        } else if(signal == "purple") {
             telemetry.addData(" parking location:", 3);
             SignalNumber = 3;
         } else {
@@ -214,7 +221,7 @@ public class driverCapableMode2 extends LinearOpMode {
     }
 
     private void StartingPosition() {
-        int startPos = 1;
+
         String[] startPosName = new String[] {"F2", "F5", "A5", "A2"};
         while (gamepad1.a == false) {
             if (gamepad1.right_bumper && startPos < 4) {
@@ -237,8 +244,7 @@ public class driverCapableMode2 extends LinearOpMode {
         StartingCoordinates(startPos);
     }
     private void StartingCoordinates(int pos) {
-        int robotX = 6;
-        int robotY = 2;
+
         if(pos == 1) {
             robotX = 6;
             robotY = 2;
@@ -252,12 +258,14 @@ public class driverCapableMode2 extends LinearOpMode {
             robotX = 1;
             robotY = 2;
         }
+        differenceX = targetPosX - robotX;
+        differenceY = targetPosY - robotY;
         telemetry.addData("coordinates: " + robotX + ", " + robotY, 0);
+        telemetry.addData("difference " + differenceX + ", " + differenceY, 0);
         telemetry.update();
     }
     private void TargetPosition () {
-        int targetPosX = 1;
-        int targetPosY = 1;
+
         String[] targetPosName = new String[] {"A", "B", "C", "D", "E", "F"};
         while (gamepad1.b == false) {
             if (gamepad1.dpad_right && targetPosX < 6) {
@@ -290,6 +298,16 @@ public class driverCapableMode2 extends LinearOpMode {
         }
     }
 
+    private void MoveToTargetPosition() {
+        if (startPos == 1 || startPos == 2) {
+            Move_F_B(-1 * differenceX * tileSize);
+            Move_L_R(differenceY * tileSize);
+        } else if (startPos == 3 || startPos == 4) {
+            Move_F_B(differenceX * tileSize);
+            Move_L_R(-1 * differenceY * tileSize);
+        }
+
+    }
     @Override
     public void runOpMode() {
         LFront = hardwareMap.get(DcMotor.class, "LFront");
@@ -328,8 +346,14 @@ public class driverCapableMode2 extends LinearOpMode {
                 0, // thirdAngle
                 true); // useCompetitionFieldTargetLocations
         tfod.useModelFromAsset(
-                "model_thirdIteration.tflite",
-                new String[] { "cookie", "chip", "pizza"});
+                "model_firstIteration.tflite",
+                new String[] { "pizza", "chip", "cookie"});
+//        tfod.useModelFromAsset(
+//                "model_secondIteration.tflite",
+//                new String[] { "pizza", "chip", "cookie"});
+        // tfod.useModelFromAsset(
+        //        "model_thirdIteration.tflite",
+        //        new String[] { "blue", "green", "purple"});
         //tfod.useDefaultModel();
         // Set min confidence threshold to 0.7
         tfod.initialize(vuforiaPOWERPLAY, (float) 0.7, true, true);
@@ -484,7 +508,10 @@ public class driverCapableMode2 extends LinearOpMode {
             MoveToSpot = false;
             h = 0;
 
-        } else {
+        } else if (gamepad1.left_bumper) {
+            MoveToTargetPosition();
+        }
+        else {
             Set_Power_Values(
                 gamepad1.left_stick_x,
                 gamepad1.left_stick_y,

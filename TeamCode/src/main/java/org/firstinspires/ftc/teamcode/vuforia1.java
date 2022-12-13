@@ -61,9 +61,12 @@ public class vuforia1 extends LinearOpMode {
                 90, // secondAngle
                 0, // thirdAngle
                 true); // useCompetitionFieldTargetLocations
-        tfod.useDefaultModel();
+        //tfod.useDefaultModel();
+        tfod.useModelFromAsset(
+                "model_thirdIteration.tflite",
+                new String[] { "blue", "green", "purple"});
         // Set min confidence threshold to 0.7
-        tfod.initialize(vuforiaPOWERPLAY, (float) 0.7, true, true);
+        tfod.initialize(vuforiaPOWERPLAY, (float) 0.2, true, true);
         // Initialize TFOD before waitForStart.
         // Activate TFOD here so the object detection labels are visible
         // in the Camera Stream preview window on the Driver Station.
