@@ -39,6 +39,7 @@ public class Sam extends LinearOpMode {
         LRear.setTargetPosition((int) (dist_F_B * THY_MAGIC_NUMBER));
         RFront.setTargetPosition((int) -(dist_F_B * THY_MAGIC_NUMBER));
         RRear.setTargetPosition((int) -(dist_F_B * THY_MAGIC_NUMBER));
+
         Config_Drive_to_RunToPos();
         telemetry.addData("LFront", ((DcMotorEx) LFront).getTargetPositionTolerance());
         telemetry.addData("LRear", ((DcMotorEx) LRear).getTargetPositionTolerance());
@@ -47,11 +48,11 @@ public class Sam extends LinearOpMode {
         Wait_for_Drive_Motors_to_Move();
         Config_Drive_to_Manual();
     }
-    private void Forward(double dist_F_B) {
-        LFront.setTargetPosition((int) (dist_F_B * THY_MAGIC_NUMBER));
-        LRear.setTargetPosition((int) (dist_F_B * THY_MAGIC_NUMBER));
-        RFront.setTargetPosition((int) (dist_F_B * THY_MAGIC_NUMBER));
-        RRear.setTargetPosition((int) (dist_F_B * THY_MAGIC_NUMBER));
+    private void Forward(int dist_F_B) {
+        LFront.setTargetPosition(dist_F_B);
+        LRear.setTargetPosition(dist_F_B);
+        RFront.setTargetPosition(dist_F_B);
+        RRear.setTargetPosition(dist_F_B);
         Config_Drive_to_RunToPos();
         telemetry.addData("LFront", ((DcMotorEx) LFront).getTargetPositionTolerance());
         telemetry.addData("LRear", ((DcMotorEx) LRear).getTargetPositionTolerance());
@@ -146,6 +147,8 @@ public class Sam extends LinearOpMode {
             RRear.setPower(bad_speed);
         }else if (gamepad1.y) {
             Dtech();
+        } else if (gamepad1.x) {
+            Forward(668);
         }
 
 
@@ -156,19 +159,49 @@ public class Sam extends LinearOpMode {
             RRear.setPower(0);
         }
     }
-    private void Spin (int direction) {
+    private void Route1 () {
 
-        Move_Spin(direction);
+        Move_Spin(22);
         Forward(48);
-        Move_Spin(-direction);
+        Move_Spin(-22);
         Forward(48);
+    }
+    private void Route2 () {
+
+        Move_Spin(22);
+        Forward(72);
+        Move_Spin(-22);
+        Forward(96);
+        Move_Spin(-22);
+        Forward(72);
+        Move_Spin(-22);
+        Forward(96);
+        Move_Spin(-44);
+
+    }
+    private void Route3 () {
+
+        Move_Spin(22);
+        Forward(24);
+        Move_Spin(-22);
+        Forward(48);
+        Move_Spin(44);
+        Forward(48);
+        Move_Spin(22);
+        Forward(24);
+        Move_Spin(22);
     }
     private void Dtech (){
         if (reset == false) {
             if (recognition.getLabel() == "1 Bolt") {
-                Spin(22);
+                Route1();
+
+
             } else if (recognition.getLabel() == "2 Bulb") {
-                Spin(-22);
+                Route2();
+
+            } else if (recognition.getLabel() == "3 Panel") {
+                Route3();
             }
         } else {
             return;

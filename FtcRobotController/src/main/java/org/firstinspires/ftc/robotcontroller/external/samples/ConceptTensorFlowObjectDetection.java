@@ -34,10 +34,14 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import java.util.List;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaCurrentGame;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.Tfod;
 
 /**
  * This 2022-2023 OpMode illustrates the basics of using the TensorFlow Object Detection API to
@@ -49,10 +53,10 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@TeleOp(name = "Concept: TensorFlow Object Detection", group = "Concept")
-@Disabled
+@TeleOp(name = "Concept: TensorFlow Object Detection")
 public class ConceptTensorFlowObjectDetection extends LinearOpMode {
-
+    private VuforiaCurrentGame vuforiaPOWERPLAY;
+    //private Tfod tfod;
     /*
      * Specify the source for the Tensor Flow Model.
      * If the TensorFlowLite object model is included in the Robot Controller App as an "asset",
@@ -60,13 +64,13 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode {
      * has been downloaded to the Robot Controller's SD FLASH memory, it must to be loaded using loadModelFromFile()
      * Here we assume it's an Asset.    Also see method initTfod() below .
      */
-    private static final String TFOD_MODEL_ASSET = "PowerPlay.tflite";
+    private static final String TFOD_MODEL_ASSET = "model_fourth_iteration.tflite";
     // private static final String TFOD_MODEL_FILE  = "/sdcard/FIRST/tflitemodels/CustomTeamModel.tflite";
 
     private static final String[] LABELS = {
-      "1 Bolt",
-      "2 Bulb",
-      "3 Panel"
+      "blue",
+      "green",
+      "purple"
     };
 
     /*
@@ -82,7 +86,7 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode {
      * and paste it in to your code on the next line, between the double quotes.
      */
     private static final String VUFORIA_KEY =
-            " -- YOUR NEW VUFORIA KEY GOES HERE  --- ";
+            "";
 
     /**
      * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
@@ -102,7 +106,23 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode {
         // first.
         initVuforia();
         initTfod();
-
+        vuforiaPOWERPLAY = new VuforiaCurrentGame();
+        //tfod = new Tfod();
+        vuforiaPOWERPLAY.initialize(
+                "", // vuforiaLicenseKey
+                hardwareMap.get(WebcamName.class, "Webcam 1"), // cameraName
+                "", // webcamCalibrationFilename
+                false, // useExtendedTracking
+                false, // enableCameraMonitoring
+                VuforiaLocalizer.Parameters.CameraMonitorFeedback.NONE, // cameraMonitorFeedback
+                0, // dx
+                0, // dy
+                0, // dz
+                AxesOrder.XZY, // axesOrder
+                90, // firstAngle
+                90, // secondAngle
+                0, // thirdAngle
+                true);
         /**
          * Activate TensorFlow Object Detection before we wait for the start command.
          * Do it here so that the Camera Stream window will have the TensorFlow annotations visible.

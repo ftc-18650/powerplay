@@ -1,3 +1,5 @@
+
+
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -10,9 +12,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaCurrentGame;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.Tfod;
-
-@TeleOp(name = "vuforia1 (Android Studio)")
-public class vuforia1 extends LinearOpMode {
+@TeleOp(name = "vuf (Blocks to Java)")
+public class Vuforia2 extends LinearOpMode {
 
     private VuforiaCurrentGame vuforiaPOWERPLAY;
     private Tfod tfod;
@@ -22,7 +23,6 @@ public class vuforia1 extends LinearOpMode {
     /**
      * This function is executed when this Op Mode is selected from the Driver Station.
      */
-
     @Override
     public void runOpMode() {
         List<Recognition> recognitions;
@@ -31,35 +31,36 @@ public class vuforia1 extends LinearOpMode {
         vuforiaPOWERPLAY = new VuforiaCurrentGame();
         tfod = new Tfod();
 
-        // Sample TFOD Op Mode
-        // Initialize Vuforia.
+        // Sample TFOD Op Mode using a Custom Model
+        // Initialize Vuforia to provide TFOD with camera
+        // images.
+        // The following block uses the device's back camera.
         vuforiaPOWERPLAY.initialize(
                 "", // vuforiaLicenseKey
-                hardwareMap.get(WebcamName.class, "Webcam 1"), // cameraName
-                "", // webcamCalibrationFilename
+                hardwareMap.get(WebcamName.class, "Webcam 1"), // cameraDirection
+                "",
                 false, // useExtendedTracking
                 false, // enableCameraMonitoring
                 VuforiaLocalizer.Parameters.CameraMonitorFeedback.NONE, // cameraMonitorFeedback
                 0, // dx
                 0, // dy
                 0, // dz
-                AxesOrder.XZY, // axesOrder
-                90, // firstAngle
-                90, // secondAngle
+                AxesOrder.XYZ, // axesOrder
+                0, // firstAngle
+                -90, // secondAngle
                 0, // thirdAngle
                 true); // useCompetitionFieldTargetLocations
+
+        // tfod.useModelFromFile("model_fourth_iteration.tflite", JavaUtil.createListWith("ball"), true, true, 320);
         //tfod.useDefaultModel();
         tfod.useModelFromAsset(
                 "model_fourth_iteration.tflite",
                 new String[] { "blue", "green", "purple"});
-        // Set min confidence threshold to 0.7
         tfod.initialize(vuforiaPOWERPLAY, (float) 0.2, true, true);
-        // Initialize TFOD before waitForStart.
-        // Activate TFOD here so the object detection labels are visible
-        // in the Camera Stream preview window on the Driver Station.
+        //tfod.setClippingMargins(0, 80, 0, 0);
         tfod.activate();
         // Enable following block to zoom in on target.
-        tfod.setZoom(1.75, 16 / 9);
+        tfod.setZoom(1, 16 / 9);
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Press Play to start");
         telemetry.update();
@@ -82,7 +83,6 @@ public class vuforia1 extends LinearOpMode {
                     for (Recognition recognition_item : recognitions) {
                         recognition = recognition_item;
                         // Display info.
-
                         displayInfo(index);
                         // Increment index.
                         index = index + 1;
@@ -91,7 +91,6 @@ public class vuforia1 extends LinearOpMode {
                 telemetry.update();
             }
         }
-
         // Deactivate TFOD.
         tfod.deactivate();
 
@@ -100,7 +99,7 @@ public class vuforia1 extends LinearOpMode {
     }
 
     /**
-     * Display info (using telemetry) for a recognized object.
+     * Describe this function...
      */
     private void displayInfo(int i) {
         // Display label info.
@@ -114,6 +113,6 @@ public class vuforia1 extends LinearOpMode {
         // Display the location of the bottom right corner
         // of the detection boundary for the recognition
         telemetry.addData("Right, Bottom " + i, Double.parseDouble(JavaUtil.formatNumber(recognition.getRight(), 0)) + ", " + Double.parseDouble(JavaUtil.formatNumber(recognition.getBottom(), 0)));
-        telemetry.update();
-    }
+        telemetry.update();    }
 }
+

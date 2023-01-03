@@ -40,11 +40,14 @@ public class driverCapableMode2 extends LinearOpMode {
     int targetPosY = 1;
     int differenceX;
     int differenceY;
+    int parkingPosX = 1;
+    int parkingPosY = 1;
 
     double Current_Power_Lvl = 0.30;
 
     /** tile size in inches */
-    final private int tileSize = 24;
+    final private int tileSizeForward = 668;
+    final private int tileSizeSideways = 704;
 
     int SignalNumber;
 
@@ -77,15 +80,15 @@ public class driverCapableMode2 extends LinearOpMode {
         MoveToSpot = true;
         if (signal == 1) {
             Move_F_B(1);
-            Move_L_R(-1 * tileSize);
-            Move_F_B(1.5 * tileSize);
+            Move_L_R(-1 * tileSizeSideways);
+            Move_F_B(1.5 * tileSizeForward);
         } else if (signal == 2) {
             Move_F_B(1);
-            Move_F_B(1.5 * tileSize);
+            Move_F_B(1.5 * tileSizeForward);
         } else if (signal == 3) {
-            Move_L_R(tileSize);
+            Move_L_R(tileSizeSideways);
             Move_F_B(1);
-            Move_F_B(1.5 * tileSize);
+            Move_F_B(1.5 * tileSizeForward);
         } else {
             MoveToSpot = false;
             return;
@@ -116,11 +119,11 @@ public class driverCapableMode2 extends LinearOpMode {
         RRear.setPower(Current_Power_Lvl);
         LRear.setPower(Current_Power_Lvl);
     }
-    private void Move_L_R(int dist_L_R) {
-        LFront.setTargetPosition((int) (dist_L_R * THY_MAGIC_NUMBER_SIDEWAYS));
-        RFront.setTargetPosition((int) -(dist_L_R * THY_MAGIC_NUMBER_SIDEWAYS));
-        LRear.setTargetPosition((int) -(dist_L_R * THY_MAGIC_NUMBER_SIDEWAYS));
-        RRear.setTargetPosition((int) (dist_L_R * THY_MAGIC_NUMBER_SIDEWAYS));
+    private void Move_L_R(double dist_L_R) {
+        LFront.setTargetPosition((int) dist_L_R);
+        RFront.setTargetPosition((int) -dist_L_R);
+        LRear.setTargetPosition((int) -dist_L_R);
+        RRear.setTargetPosition((int) dist_L_R);
         Config_Drive_to_RunToPos();
         Wait_for_Drive_Motors_to_Move();
         Config_Drive_to_Manual();
@@ -130,17 +133,18 @@ public class driverCapableMode2 extends LinearOpMode {
      * Describe this function...
      */
     private void Move_F_B(double dist_F_B) {
-        LFront.setTargetPosition((int) (dist_F_B * THY_MAGIC_NUMBER));
-        LRear.setTargetPosition((int) (dist_F_B * THY_MAGIC_NUMBER));
-        RFront.setTargetPosition((int) (dist_F_B * THY_MAGIC_NUMBER));
-        RRear.setTargetPosition((int) (dist_F_B * THY_MAGIC_NUMBER));
+        LFront.setTargetPosition((int) dist_F_B);
+        LRear.setTargetPosition((int) dist_F_B);
+        RFront.setTargetPosition((int) dist_F_B);
+        RRear.setTargetPosition((int) dist_F_B);
         Config_Drive_to_RunToPos();
         telemetry.addData("LFront", ((DcMotorEx) LFront).getTargetPositionTolerance());
         telemetry.addData("LRear", ((DcMotorEx) LRear).getTargetPositionTolerance());
         telemetry.addData("RFront", ((DcMotorEx) RFront).getTargetPositionTolerance());
         telemetry.addData("RRear", ((DcMotorEx) RRear).getTargetPositionTolerance());
-        Wait_for_Drive_Motors_to_Move();
-        Config_Drive_to_Manual();
+        if (LFront.getPower() == 0) {
+            Config_Drive_to_Manual();
+        }
     }
     private boolean Number_Within_Range_(double Num, int Min, int Max) {
         return Num == Math.min(Math.max(Num, Min), Max);
@@ -219,7 +223,13 @@ public class driverCapableMode2 extends LinearOpMode {
             }
         }
     }
-
+    private void ResetValues () {
+        robotX = 6;
+        robotY = 2;
+        startPos = 1;
+        targetPosX = 1;
+        targetPosY = 1;
+    }
     private void StartingPosition() {
 
         String[] startPosName = new String[] {"F2", "F5", "A5", "A2"};
@@ -300,11 +310,11 @@ public class driverCapableMode2 extends LinearOpMode {
 
     private void MoveToTargetPosition() {
         if (startPos == 1 || startPos == 2) {
-            Move_F_B(-1 * differenceX * tileSize);
-            Move_L_R(differenceY * tileSize);
+            Move_F_B(-1 * differenceX * tileSizeForward);
+            Move_L_R(differenceY * tileSizeSideways);
         } else if (startPos == 3 || startPos == 4) {
-            Move_F_B(differenceX * tileSize);
-            Move_L_R(-1 * differenceY * tileSize);
+            Move_F_B(differenceX * tileSizeForward);
+            Move_L_R(-1 * differenceY * tileSizeSideways);
         }
 
     }
@@ -349,10 +359,10 @@ public class driverCapableMode2 extends LinearOpMode {
                 "model_firstIteration.tflite",
                 new String[] { "pizza", "chip", "cookie"});
 //        tfod.useModelFromAsset(
-//                "model_secondIteration.tflite",
+//                "model_second_iteration.tflite",
 //                new String[] { "pizza", "chip", "cookie"});
         // tfod.useModelFromAsset(
-        //        "model_thirdIteration.tflite",
+        //        "model_third_iteration.tflite",
         //        new String[] { "blue", "green", "purple"});
         //tfod.useDefaultModel();
         // Set min confidence threshold to 0.7
@@ -365,7 +375,9 @@ public class driverCapableMode2 extends LinearOpMode {
         tfod.setZoom(2.25, 16 / 9);
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Press Play to start");
+        ResetValues();
         StartingPosition();
+        ResetValues();
         //TargetPosition();
         telemetry.update();
 
@@ -495,14 +507,14 @@ public class driverCapableMode2 extends LinearOpMode {
         } else if (gamepad1.dpad_right) {
             GoRight();
         } else if (gamepad1.y) {
-            telemetry.addData("Move_F_B",tileSize);
-            Move_F_B(tileSize);
+            telemetry.addData("Move_F_B",tileSizeForward);
+            Move_F_B(tileSizeForward);
         } else if (gamepad1.a) {
-            Move_F_B(-1 * tileSize);
+            Move_F_B(-1 * tileSizeForward);
         } else if (gamepad1.x) {
-            Move_L_R(-1 * tileSize);
+            Move_L_R(-1 * tileSizeSideways);
         } else if (gamepad1.b) {
-            Move_L_R(tileSize);
+            Move_L_R(tileSizeSideways);
         } else if (gamepad1.right_bumper) {
             ScanForSignal();
             MoveToSpot = false;
