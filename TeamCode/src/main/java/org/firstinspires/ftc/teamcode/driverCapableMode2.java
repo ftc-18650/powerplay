@@ -9,6 +9,7 @@ import java.util.List;
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaBase;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaCurrentGame;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
@@ -33,6 +34,8 @@ public class driverCapableMode2 extends LinearOpMode {
     static final double THY_MAGIC_NUMBER_ANGLE = 6.53;
     static final float DPAD_POWER_LVL = 1.0F;
 
+    VuforiaBase.TrackingResults vuforiaResults;
+
     int robotX = 6;
     int robotY = 2;
     int startPos = 1;
@@ -47,7 +50,7 @@ public class driverCapableMode2 extends LinearOpMode {
 
     /** tile size in inches */
     final private int tileSizeForward = 668;
-    final private int tileSizeSideways = 704;
+    final private int tileSizeSideways = 695;
 
     int SignalNumber;
 
@@ -142,9 +145,9 @@ public class driverCapableMode2 extends LinearOpMode {
         telemetry.addData("LRear", ((DcMotorEx) LRear).getTargetPositionTolerance());
         telemetry.addData("RFront", ((DcMotorEx) RFront).getTargetPositionTolerance());
         telemetry.addData("RRear", ((DcMotorEx) RRear).getTargetPositionTolerance());
-        if (LFront.getPower() == 0) {
-            Config_Drive_to_Manual();
-        }
+        Wait_for_Drive_Motors_to_Move();
+        Config_Drive_to_Manual();
+
     }
     private boolean Number_Within_Range_(double Num, int Min, int Max) {
         return Num == Math.min(Math.max(Num, Min), Max);
@@ -310,11 +313,11 @@ public class driverCapableMode2 extends LinearOpMode {
 
     private void MoveToTargetPosition() {
         if (startPos == 1 || startPos == 2) {
-            Move_F_B(-1 * differenceX * tileSizeForward);
+            Move_F_B(Math.abs(differenceX * tileSizeForward));
             Move_L_R(differenceY * tileSizeSideways);
         } else if (startPos == 3 || startPos == 4) {
-            Move_F_B(differenceX * tileSizeForward);
-            Move_L_R(-1 * differenceY * tileSizeSideways);
+            Move_F_B(Math.abs(differenceX * tileSizeForward));
+            Move_L_R(differenceY * tileSizeSideways);
         }
 
     }
@@ -339,8 +342,8 @@ public class driverCapableMode2 extends LinearOpMode {
 
         vuforiaPOWERPLAY = new VuforiaCurrentGame();
         tfod = new Tfod();
-
-        vuforiaPOWERPLAY.initialize(
+        initVuforia();
+        /*vuforiaPOWERPLAY.initialize(
                 "", // vuforiaLicenseKey
                 hardwareMap.get(WebcamName.class, "Webcam 1"), // cameraName
                 "", // webcamCalibrationFilename
@@ -354,7 +357,7 @@ public class driverCapableMode2 extends LinearOpMode {
                 90, // firstAngle
                 90, // secondAngle
                 0, // thirdAngle
-                true); // useCompetitionFieldTargetLocations
+                true); // useCompetitionFieldTargetLocations*/
         tfod.useModelFromAsset(
                 "model_firstIteration.tflite",
                 new String[] { "pizza", "chip", "cookie"});
@@ -386,6 +389,17 @@ public class driverCapableMode2 extends LinearOpMode {
 
             telemetry.addData("LSX", gamepad1.left_stick_x);
             telemetry.addData("LSY", gamepad1.left_stick_y);
+            if (isTargetVisible("Blue Storage")) {
+                processTarget();
+            } else if (isTargetVisible("Blue Alliance Wall")) {
+                processTarget();
+            } else if (isTargetVisible("Red Storage")) {
+                processTarget();
+            } else if (isTargetVisible("Red Alliance Wall")) {
+                processTarget();
+            } else {
+                telemetry.addData("No Targets Detected", "Targets are not visible.");
+            }
 
 
             Process_Movement();
@@ -398,6 +412,24 @@ public class driverCapableMode2 extends LinearOpMode {
 
         vuforiaPOWERPLAY.close();
         tfod.close();
+    }
+    private void initVuforia() {
+        // Initialize using external web camera.
+        vuforiaPOWERPLAY.initialize(
+                "", // vuforiaLicenseKey
+                hardwareMap.get(WebcamName.class, "Webcam 1"), // cameraName
+                "", // webcamCalibrationFilename
+                false, // useExtendedTracking
+                true, // enableCameraMonitoring
+                VuforiaLocalizer.Parameters.CameraMonitorFeedback.AXES, // cameraMonitorFeedback
+                0, // dx
+                0, // dy
+                0, // dz
+                AxesOrder.XZY, // axesOrder
+                90, // firstAngle
+                90, // secondAngle
+                0, // thirdAngle
+                true); // useCompetitionFieldTargetLocations
     }
 
     /**
@@ -454,7 +486,45 @@ public class driverCapableMode2 extends LinearOpMode {
             return 1;
         }
     }
+    private boolean isTargetVisible(String trackableName) {
+        boolean isVisible;
 
+        // Get vuforia results for target.
+        vuforiaResults = vuforiaPOWERPLAY.track(trackableName);
+        // Is this target visible?
+        if (vuforiaResults.isVisible) {
+            isVisible = true;
+        } else {
+            isVisible = false;
+        }
+        return isVisible;
+    }
+    private void processTarget() {
+        // Display the target name.
+        telemetry.addData("Target Detected", vuforiaResults.name + " is visible.");
+        telemetry.addData("X (in)", Double.parseDouble(JavaUtil.formatNumber(displayValue(vuforiaResults.x, "IN"), 2)));
+        telemetry.addData("Y (in)", Double.parseDouble(JavaUtil.formatNumber(displayValue(vuforiaResults.y, "IN"), 2)));
+        telemetry.addData("Z (in)", Double.parseDouble(JavaUtil.formatNumber(displayValue(vuforiaResults.z, "IN"), 2)));
+        telemetry.addData("Rotation about Z (deg)", Double.parseDouble(JavaUtil.formatNumber(vuforiaResults.zAngle, 2)));
+    }
+
+    private double displayValue(float originalValue, String units) {
+        double convertedValue;
+
+        // Vuforia returns distances in mm.
+        if (units.equals("CM")) {
+            convertedValue = originalValue / 10;
+        } else if (units.equals("M")) {
+            convertedValue = originalValue / 1000;
+        } else if (units.equals("IN")) {
+            convertedValue = originalValue / 25.4;
+        } else if (units.equals("FT")) {
+            convertedValue = (originalValue / 25.4) / 12;
+        } else {
+            convertedValue = originalValue;
+        }
+        return convertedValue;
+    }
     /**
      * Gets power values.
      */
