@@ -58,17 +58,17 @@ public class Navtest extends LinearOpMode {
     VuforiaBase.TrackingResults vuforiaResults;
 
     /**
-     * This function is executed when this Op Mode is selected from the Driver Station.
+     * Autonomous Parking
      */
 
     private void ParkingLocation (String signal) {
-        if(signal == "blue") {
+        if(signal == "chip") {
             telemetry.addData(" parking location:", 1);
             SignalNumber = 1;
-        } else if(signal == "green") {
+        } else if(signal == "macaroon") {
             telemetry.addData(" parking location:", 2);
             SignalNumber = 2;
-        } else if(signal == "purple") {
+        } else if(signal == "pizza") {
             telemetry.addData(" parking location:", 3);
             SignalNumber = 3;
         } else {
@@ -95,6 +95,9 @@ public class Navtest extends LinearOpMode {
         }
     }
 
+    /**
+     * Tile movement
+     */
     private void Config_Drive_to_Manual() {
 
         LFront.setPower(0);
@@ -180,6 +183,9 @@ public class Navtest extends LinearOpMode {
         }
     }
 
+    /**
+     * Autonomous movement
+     */
     private void StartMovement () {
         Move_F_B(0.2 * tileSizeForward);
         Move_Rotate(350); //2400 ~ 360 degrees
@@ -205,7 +211,16 @@ public class Navtest extends LinearOpMode {
         }
         StartingCoordinates(startPos);
     }
+    private void AutonomousMode () {
+        Detection();
+        Move_L_R(tileSizeSideways); //will to be different direction dependent on starting position
+        Move_F_B(tileSizeForward);
 
+    }
+
+    /**
+     * TFOD
+     */
     private void Detection () {
         List<Recognition> recognitions;
         recognitions = tfod.getRecognitions();
@@ -213,7 +228,6 @@ public class Navtest extends LinearOpMode {
         // through list and display info for each recognition.
         if (JavaUtil.listLength(recognitions) == 0) {
             telemetry.addData("TFOD", "No items detected.");
-            detected = 1;
             ParkingLocation("no detection");
         } else {
             // index = 0;
@@ -227,15 +241,14 @@ public class Navtest extends LinearOpMode {
                 // Increment index.
                 //index = index + 1;
             }
-            detected = 0;
             ParkingLocation(recognition.getLabel());
-            RunToSignal(SignalNumber);
+
 
         }
 
 
     }
-    private void MoveForSignal () {
+    /**private void MoveForSignal () {
         Detection();
         if (h == 0) {
             Move_L_R(1);
@@ -254,9 +267,11 @@ public class Navtest extends LinearOpMode {
                 return;
             }
         }
-    }
+    }*/
 
-
+    /**
+     * Initialization for target locations
+     */
     private void ResetValues () {
         robotX = 6;
         robotY = 2;
@@ -264,7 +279,7 @@ public class Navtest extends LinearOpMode {
         targetPosX = 1;
         targetPosY = 1;
     }
-    /*private void StartingPosition() {
+    private void StartingPosition() {
 
         String[] startPosName = new String[] {"F2", "F5", "A5", "A2"};
         while (gamepad1.a == false) {
@@ -286,7 +301,7 @@ public class Navtest extends LinearOpMode {
         }
         TargetPosition();
         StartingCoordinates(startPos);
-    }*/
+    }
     private void StartingCoordinates(int pos) {
 
         if(pos == 1) {
@@ -378,11 +393,11 @@ public class Navtest extends LinearOpMode {
         telemetry.update();
         initVuforia();
         tfod.useModelFromAsset(
-                "model_firstIteration.tflite",
-                new String[] { "pizza", "chip", "cookie"});
+                "model_new_style.tflite",
+                new String[] { "chip", "macaroon", "pizza"});
         tfod.initialize(vuforiaPOWERPLAY, (float) 0.7, true, true);
         tfod.activate();
-        tfod.setZoom(2.25, 16 / 9);
+        tfod.setZoom(1.75, 16 / 9);
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Press Play to start");
 
@@ -392,13 +407,13 @@ public class Navtest extends LinearOpMode {
         telemetry.addData(">>", "Vuforia initialized, press start to continue...");
         telemetry.update();
         ResetValues();
-        TargetPosition();
+        StartingPosition();
         ResetValues();
         waitForStart();
         if (opModeIsActive()) {
-            StartMovement();
-            Move_Rotate(350);
-            Move_F_B(-0.1 * tileSizeForward);
+            //StartMovement();
+            //Move_Rotate(350);
+            //Move_F_B(-0.1 * tileSizeForward);
             while (opModeIsActive()) {
                 // Are the targets visible?
                 // (Note we only process first visible target).
@@ -433,7 +448,7 @@ public class Navtest extends LinearOpMode {
     }
 
     /**
-     * Describe this function...
+     Vuforia functions
      */
     private void initVuforia() {
         // Initialize using external web camera.
@@ -453,10 +468,6 @@ public class Navtest extends LinearOpMode {
                 0, // thirdAngle
                 true); // useCompetitionFieldTargetLocations
     }
-
-    /**
-     * Check to see if the target is visible.
-     */
     private boolean isTargetVisible(String trackableName) {
         boolean isVisible;
 
@@ -470,11 +481,6 @@ public class Navtest extends LinearOpMode {
         }
         return isVisible;
     }
-
-    /**
-     * This function displays location on the field and rotation about the Z
-     * axis on the field. It uses results from the isTargetVisible function.
-     */
     private void processTarget() {
         // Display the target name.
         telemetry.addData("Target Detected", vuforiaResults.name + " is visible.");
@@ -483,11 +489,6 @@ public class Navtest extends LinearOpMode {
         telemetry.addData("Z (in)", Double.parseDouble(JavaUtil.formatNumber(displayValue(vuforiaResults.z, "IN"), 2)));
         telemetry.addData("Rotation about Z (deg)", Double.parseDouble(JavaUtil.formatNumber(vuforiaResults.zAngle, 2)));
     }
-
-    /**
-     * By default, distances are returned in millimeters by Vuforia.
-     * Convert to other distance units (CM, M, IN, and FT).
-     */
     private double displayValue(float originalValue, String units) {
         double convertedValue;
 
@@ -506,6 +507,9 @@ public class Navtest extends LinearOpMode {
         return convertedValue;
     }
 
+    /**
+     * Movement Functions
+     */
     private void GoStraight() {
         Set_Power_Values(
                 0,
@@ -515,7 +519,6 @@ public class Navtest extends LinearOpMode {
                 Current_Power_Lvl
         );
     }
-
     private void GoBackwards() {
         Set_Power_Values(
                 0,
@@ -525,7 +528,6 @@ public class Navtest extends LinearOpMode {
                 Current_Power_Lvl
         );
     }
-
     private void GoLeft() {
         Set_Power_Values(
                 -1 * DPAD_POWER_LVL,
@@ -535,7 +537,6 @@ public class Navtest extends LinearOpMode {
                 Current_Power_Lvl
         );
     }
-
     private void GoRight() {
         Set_Power_Values(
                 DPAD_POWER_LVL,
@@ -545,7 +546,6 @@ public class Navtest extends LinearOpMode {
                 Current_Power_Lvl
         );
     }
-
     private double Get_Denominator() {
         double sum = Math.abs(gamepad1.left_stick_y)
                 + Math.abs(gamepad1.left_stick_x)
@@ -619,10 +619,7 @@ public class Navtest extends LinearOpMode {
         } else if (gamepad1.b) {
             Move_L_R(tileSizeSideways);
         } else if (gamepad1.right_bumper) {
-            ScanForSignal();
-            MoveToSpot = false;
-            h = 0;
-
+            Detection();
         } else if (gamepad1.left_bumper) {
             MoveToTargetPosition();
         }

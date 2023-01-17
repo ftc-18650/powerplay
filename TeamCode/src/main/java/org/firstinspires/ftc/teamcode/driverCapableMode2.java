@@ -64,13 +64,13 @@ public class driverCapableMode2 extends LinearOpMode {
     Recognition recognition;
 
     private void ParkingLocation (String signal) {
-        if(signal == "blue") {
+        if(signal == "chip") {
             telemetry.addData(" parking location:", 1);
             SignalNumber = 1;
-        } else if(signal == "green") {
+        } else if(signal == "macaroon") {
             telemetry.addData(" parking location:", 2);
             SignalNumber = 2;
-        } else if(signal == "purple") {
+        } else if(signal == "pizza") {
             telemetry.addData(" parking location:", 3);
             SignalNumber = 3;
         } else {
@@ -359,15 +359,8 @@ public class driverCapableMode2 extends LinearOpMode {
                 0, // thirdAngle
                 true); // useCompetitionFieldTargetLocations*/
         tfod.useModelFromAsset(
-                "model_firstIteration.tflite",
-                new String[] { "pizza", "chip", "cookie"});
-//        tfod.useModelFromAsset(
-//                "model_second_iteration.tflite",
-//                new String[] { "pizza", "chip", "cookie"});
-        // tfod.useModelFromAsset(
-        //        "model_third_iteration.tflite",
-        //        new String[] { "blue", "green", "purple"});
-        //tfod.useDefaultModel();
+                "model_new_style.tflite",
+                new String[] { "chip", "macaroon", "pizza"});
         // Set min confidence threshold to 0.7
         tfod.initialize(vuforiaPOWERPLAY, (float) 0.7, true, true);
         // Initialize TFOD before waitForStart.
@@ -375,7 +368,7 @@ public class driverCapableMode2 extends LinearOpMode {
         // in the Camera Stream preview window on the Driver Station.
         tfod.activate();
         // Enable following block to zoom in on target.
-        tfod.setZoom(2.25, 16 / 9);
+        tfod.setZoom(1.75, 16 / 9);
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Press Play to start");
         ResetValues();
